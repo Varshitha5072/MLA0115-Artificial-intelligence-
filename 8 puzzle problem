@@ -1,0 +1,85 @@
+import heapq
+
+# Define the goal state
+GOAL_STATE = ((1, 2, 3), (4, 5, 6), (7, 8, 0))
+
+# Directions for moving the blank space: up, down, left, right
+MOVES = {
+    'U': (-1, 0),
+    'D': (1, 0),
+    'L': (0, -1),
+    'R': (0, 1)
+}
+
+class PuzzleState:
+    def __init__(self, board, moves='', parent=None):
+        self.board = board
+        self.blank_pos = self.find_blank()
+        self.moves = moves
+        self.parent = parent
+
+    def find_blank(self):
+        for r, row in enumerate(self.board):
+            if 0 in row:
+                return (r, row.index(0))
+
+    def is_goal(self):
+        return self.board == GOAL_STATE
+
+    def get_neighbors(self):
+        neighbors = []
+        r, c = self.blank_pos
+        for move, (dr, dc) in MOVES.items():
+            new_r, new_c = r + dr, c + dc
+            if 0 <= new_r < 3 and 0 <= new_c < 3:
+                new_board = [list(row) for row in self.board]
+                new_board[r][c], new_board[new_r][new_c] = new_board[new_r][new_c], new_board[r][c]
+                neighbors.append(PuzzleState(tuple(tuple(row) for row in new_board), self.moves + move, self))
+        return neighbors
+
+    def heuristic(self):
+        return sum(abs(b % 3 - g % 3) + abs(b // 3 - g // 3)
+                   for b, g in ((self.board[r][c], GOAL_STATE[r][c]) for r in range(3) for c in range(3)))
+
+    def __lt__(self, other):
+        return (self.heuristic() + len(self.moves)) < (other.heuristic() + len(other.moves))
+
+    def __repr__(self):
+        return '\n'.join(' '.join(str(x) if x != 0 else '.' for x in row) for row in self.board)
+
+def a_star_search(start_state):
+    open_set = []
+    heapq.heappush(open_set, start_state)
+    closed_set = set()
+
+    while open_set:
+        current = heapq.heappop(open_set)
+
+        if current.is_goal():
+            return current
+
+        closed_set.add(current.board)
+
+        for neighbor in current.get_neighbors():
+            if neighbor.board not in closed_set:
+                heapq.heappush(open_set, neighbor)
+
+    return None
+
+def print_solution(state):
+    if state:
+        print("Moves:", state.moves)
+        path = []
+        while state:
+            path.append(state)
+            state = state.parent
+        for step in reversed(path):
+            print(step)
+            print()
+    else:
+        print("No solution found.")
+
+# Example usage
+start = PuzzleState(((1, 2, 3), (4, 5, 6), (7, 0, 8)))
+solution = a_star_search(start)
+print_solution(solution)
