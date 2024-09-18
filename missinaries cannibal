@@ -1,0 +1,73 @@
+from collections import deque
+
+# Define the state of the problem
+# (missionaries_left, cannibals_left, boat_position, missionaries_right, cannibals_right)
+# boat_position: 0 = left side, 1 = right side
+initial_state = (3, 3, 0, 0, 0)
+
+def is_valid_state(m_left, c_left, m_right, c_right):
+    # Check if missionaries are not outnumbered by cannibals on either side
+    if (m_left < c_left and m_left > 0) or (m_right < c_right and m_right > 0):
+        return False
+    return True
+
+def get_neighbors(state):
+    m_left, c_left, boat_pos, m_right, c_right = state
+    neighbors = []
+    
+    # Define possible moves based on the boat's current position
+    if boat_pos == 0:  # Boat on the left side
+        for m_move in range(3):
+            for c_move in range(3):
+                if (m_move + c_move > 0 and m_move + c_move <= 2 and 
+                    m_move <= m_left and c_move <= c_left):
+                    
+                    new_m_left = m_left - m_move
+                    new_c_left = c_left - c_move
+                    new_m_right = m_right + m_move
+                    new_c_right = c_right + c_move
+                    
+                    if is_valid_state(new_m_left, new_c_left, new_m_right, new_c_right):
+                        neighbors.append((new_m_left, new_c_left, 1, new_m_right, new_c_right))
+    else:  # Boat on the right side
+        for m_move in range(3):
+            for c_move in range(3):
+                if (m_move + c_move > 0 and m_move + c_move <= 2 and 
+                    m_move <= m_right and c_move <= c_right):
+                    
+                    new_m_left = m_left + m_move
+                    new_c_left = c_left + c_move
+                    new_m_right = m_right - m_move
+                    new_c_right = c_right - c_move
+                    
+                    if is_valid_state(new_m_left, new_c_left, new_m_right, new_c_right):
+                        neighbors.append((new_m_left, new_c_left, 0, new_m_right, new_c_right))
+    
+    return neighbors
+
+def bfs_solve():
+    visited = set()
+    queue = deque([(initial_state, [])])
+    
+    while queue:
+        (state, path) = queue.popleft()
+        if state[0] == 0 and state[1] == 0:  # All missionaries and cannibals are on the right side
+            return path + [state]
+        
+        for neighbor in get_neighbors(state):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, path + [state]))
+    
+    return None
+
+def print_solution(solution):
+    if solution:
+        for step in solution:
+            print(f"Left bank: {step[0]} missionaries, {step[1]} cannibals; Right bank: {step[3]} missionaries, {step[4]} cannibals; Boat {'on the right' if step[2] == 1 else 'on the left'}")
+    else:
+        print("No solution found.")
+
+# Example usage
+solution = bfs_solve()
+print_solution(solution)
