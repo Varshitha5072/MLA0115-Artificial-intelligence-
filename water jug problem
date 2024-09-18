@@ -1,0 +1,48 @@
+from collections import deque
+
+def bfs_solve(a, b, c):
+    if c > max(a, b):
+        return "Not possible"
+
+    # Queue for BFS, storing states as (amount in A, amount in B, steps)
+    queue = deque([(0, 0, [])])
+    visited = set((0, 0))  # Set of visited states to prevent revisiting
+
+    while queue:
+        curr_a, curr_b, path = queue.popleft()
+
+        # Check if we have achieved the desired measurement
+        if curr_a == c or curr_b == c:
+            return path + [(curr_a, curr_b)]
+
+        # Generate all possible next states
+        next_states = [
+            (a, curr_b),  # Fill Jug A
+            (curr_a, b),  # Fill Jug B
+            (0, curr_b),  # Empty Jug A
+            (curr_a, 0),  # Empty Jug B
+            (curr_a - min(curr_a, b - curr_b), curr_b + min(curr_a, b - curr_b)),  # Pour A to B
+            (curr_a + min(curr_b, a - curr_a), curr_b - min(curr_b, a - curr_a))   # Pour B to A
+        ]
+
+        for state in next_states:
+            if state not in visited:
+                visited.add(state)
+                queue.append((state[0], state[1], path + [state]))
+
+    return "Not possible"
+
+def print_solution(solution):
+    if solution == "Not possible":
+        print(solution)
+    else:
+        for step in solution:
+            print(f"Jug A: {step[0]}, Jug B: {step[1]}")
+
+# Example usage
+a = 4  # Capacity of Jug A
+b = 3  # Capacity of Jug B
+c = 2  # Desired amount of water
+
+solution = bfs_solve(a, b, c)
+print_solution(solution)
