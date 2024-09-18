@@ -1,0 +1,42 @@
+from itertools import permutations
+
+def is_valid_solution(solve_dict):
+    # Convert letters to digits using the solve_dict mapping
+    SEND = int(f"{solve_dict['S']}{solve_dict['E']}{solve_dict['N']}{solve_dict['D']}")
+    MORE = int(f"{solve_dict['M']}{solve_dict['O']}{solve_dict['R']}{solve_dict['E']}")
+    MONEY = int(f"{solve_dict['M']}{solve_dict['O']}{solve_dict['N']}{solve_dict['E']}{solve_dict['Y']}")
+    
+    # Check if the equation SEND + MORE = MONEY holds true
+    return SEND + MORE == MONEY
+
+def solve_cryptarithm():
+    letters = 'SENDMOREY'  # All letters involved in the cryptarithm
+    
+    for perm in permutations(range(10), len(letters)):
+        solve_dict = dict(zip(letters, perm))
+        
+        # Check for leading zeroes (invalid for numbers with more than one digit)
+        if solve_dict['S'] == 0 or solve_dict['M'] == 0:
+            continue
+        
+        if is_valid_solution(solve_dict):
+            return solve_dict
+    
+    return None
+
+def print_solution(solve_dict):
+    if solve_dict:
+        print(f"S = {solve_dict['S']}")
+        print(f"E = {solve_dict['E']}")
+        print(f"N = {solve_dict['N']}")
+        print(f"D = {solve_dict['D']}")
+        print(f"M = {solve_dict['M']}")
+        print(f"O = {solve_dict['O']}")
+        print(f"R = {solve_dict['R']}")
+        print(f"Y = {solve_dict['Y']}")
+    else:
+        print("No solution found.")
+
+# Example usage
+solution = solve_cryptarithm()
+print_solution(solution)
